@@ -11,6 +11,7 @@ public class TowerManager : MonoBehaviour
     private SpriteRenderer spr;
     public GameObject currentTarget;
     public PlayerBaseScript baseTower;
+    private bool readyToFire = true;
 
     // Start is called before the first frame update
     void Start()
@@ -26,6 +27,7 @@ public class TowerManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        /*
         if (currentTarget != null)
         {
             AttackTarget();
@@ -34,6 +36,7 @@ public class TowerManager : MonoBehaviour
         {
             FindNextTarget();
         }
+        */
     }
 
     private void OnCollisionEnter2D(Collision2D collision)
@@ -94,7 +97,12 @@ public class TowerManager : MonoBehaviour
 
     public void AttackTarget()
     {
-        GameObject shotProjectile = CreateProjectile();
+        //GameObject shotProjectile = CreateProjectile();
+
+        if(readyToFire)
+        {
+            StartCoroutine(FireProjectile());
+        }
     }
 
     private GameObject CreateProjectile()
@@ -108,6 +116,18 @@ public class TowerManager : MonoBehaviour
         projectile.GetComponent<SpriteRenderer>().sortingOrder = 100;
         projectile.GetComponent<CircleCollider2D>().isTrigger = true;
 
+        projectile.AddComponent<ProjectileManager>();
+        projectile.GetComponent<ProjectileManager>().self = self.projectile;
+        projectile.GetComponent<ProjectileManager>().target = currentTarget;
+
         return projectile;
+    }
+
+    IEnumerator FireProjectile()
+    {
+        GameObject shotProjectile = CreateProjectile();
+        readyToFire = false;
+        yield return new WaitForSeconds(self.attackCooldown);
+        readyToFire = true;
     }
 }
